@@ -2,22 +2,39 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"time"
 )
 
-func f(n int) {
-	for i := 0; i < 10; i++ {
-		fmt.Println(n, ":", i)
-		amt := time.Duration(rand.Intn(250))
-		time.Sleep(time.Millisecond * amt)
+func pinger(c chan string) {
+	for i := 0; ; i++ {
+		c <- "ping"
+	}
+}
+
+// Двунаправленный канал c chan string
+func ponger(c chan string) {
+	for i := 0; ; i++ {
+		c <- "pong"
+	}
+}
+
+// Однонаправленный канал c <- chan string
+func printer(c <-chan string) {
+	for {
+		msg := <-c
+		fmt.Println(msg)
+		time.Sleep(time.Second * 1)
 	}
 }
 
 func main() {
-	for i := 0; i < 10; i++ {
-		go f(i)
-	}
+	// Синхронный канал make(chan string) !!!
+	var c chan string = make(chan string)
+
+	go printer(c)
+	go ponger(c)
+	go pinger(c)
+
 	var input string
 	fmt.Scanln(&input)
 }
