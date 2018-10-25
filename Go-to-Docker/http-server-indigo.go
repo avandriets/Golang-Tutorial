@@ -42,6 +42,7 @@ func smilesToMol(w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		C.free(unsafe.Pointer(smiles))
+		C.indigoFree(molecule)
 	}()
 }
 
