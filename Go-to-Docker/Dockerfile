@@ -4,6 +4,8 @@ RUN mkdir /build
 ADD . /build/
 WORKDIR /build
 
+RUN go get -v -u github.com/gorilla/mux
+
 RUN go build -a -installsuffix cgo -ldflags '-extldflags "-s -L./indigo/lib -Wl,-rpath=./indigo/lib -lindigo"' -o service http-server-indigo.go
 #FROM debian:stable-slim
 #FROM bitnami/minideb:jessie

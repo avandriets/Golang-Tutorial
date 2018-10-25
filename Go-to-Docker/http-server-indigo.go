@@ -2,6 +2,7 @@ package main
 
 /*
 #cgo CFLAGS: -I./indigo/include
+#cgo LDFLAGS: -L./indigo/lib -Wl,-rpath=./indigo/lib -lindigo
 #include <indigo.h>
 
 #include <stdio.h>
@@ -13,22 +14,42 @@ static void myprint(char* s) {
 */
 import "C"
 import (
-	"io"
+	"encoding/json"
+	"log"
 	"net/http"
+	"unsafe"
+
+	"github.com/gorilla/mux"
 )
 
-func helloWorld(res http.ResponseWriter, req *http.Request) {
-	res.Header().Set(
-		"Content-Type",
-		"text/html",
-	)
-	io.WriteString(
-		res,
-		`<doctype html><html><head><title>Hello World</title></head><body>Hello World!</body></html>`,
-	)
+func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
+	response, _ := json.Marshal(payload)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(response)
+}
+
+func smilesToMol(w http.ResponseWriter, r *http.Request) {
+	smilesString := r.FormValue("smiles")
+
+	smiles := C.CString(smilesString)
+	molecule := C.indigoLoadSmartsFromString(smiles)
+	molString := C.indigoMolfile(molecule)
+
+	cstr := C.GoString(molString)
+
+	respondWithJson(w, http.StatusOK, map[string]string{"mol": cstr})
+
+	defer func() {
+		C.free(unsafe.Pointer(smiles))
+	}()
 }
 
 func main() {
-	http.HandleFunc("/hello", helloWorld)
-	http.ListenAndServe(":9000", nil)
+	r := mux.NewRouter()
+	r.HandleFunc("/smiles-to-mol", smilesToMol).Methods("GET")
+
+	if err := http.ListenAndServe(":9000", r); err != nil {
+		log.Fatal(err)
+	}
 }
