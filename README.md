@@ -1,4 +1,8 @@
 ### Golang tutorial
+## There are simple examples of using go in folder 'Firs-Step'
+## Example how to work with GO and C libs (indigo) in Docker in folder 'Go-to-Docker'
+## Example of packages in GO in folder GoPackages-GoTest
+## Example of simple http server with GO in folder GoPackages-GoTest
 
 ## install
 https://golang.org/doc/install
@@ -13,7 +17,7 @@ $ go run file.go
 $ go build file.go
 `
 
-### Go Dockerization
+### Go Dockerization (Indigo service - C libs )
 I am using to start go application in docker busybox:glibc docker image
 
 ## build
